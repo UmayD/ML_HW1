@@ -1,0 +1,86 @@
+\documentclass[12pt]{article}
+
+\usepackage[top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{multicol}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\ts}{\textsuperscript}
+% load package with ``framed'' and ``numbered'' option.
+\usepackage[framed, numbered, autolinebreaks, useliterate]{mcode}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage[export]{adjustbox}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{Times}
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+\usepackage{setspace}
+\doublespacing
+
+\usepackage{pdfpages}
+
+\title{Homework 1 \\
+  \large CS 464 - Introduction to Machine Learning \onehalfspacing}
+\author{\small I. Umay DURUR - 21502041\\ \textit{\small Electrical and Electronics Engineering Department, Bilkent University}}
+\date{\small \textit{\today}}
+
+\begin{document}
+
+\onehalfspacing
+\maketitle
+\tableofcontents
+\listoffigures
+\listoftables
+
+\newpage
+
+\doublespacing
+\section{Probability Questions}
+
+\subsection*{Question 1.1}
+\tab Since the probability of having exactly 1 turnover for the season is asked, there are only 4 possibilities. A turnover would be occur when a winning/losing comes before or after a series of losing/winning. The possibilities are:
+\begin{itemize}
+\item W W W W W W W L
+\item L W W W W W W W
+\item W L L L L L L L
+\item L L L L L L L W
+\end{itemize}
+
+The probability of a lose in a winning series is
+
+\begin{align*}
+P &= {8 \choose 7}(0.6)^{7}(0.4)^{1} \\
+P(X = 7) &= 0.01119744 \approx 0.01
+\end{align*}
+
+An the probability of a win in a losing series is the following.
+
+\begin{align*}
+P(X=1) &= {8 \choose 1}(0.6)^{1}(0.4)^{7} \\
+P(X=1) &= 0.00786432 \approx 0.008
+\end{align*}
+
+Total probability is given in Eq. \ref{eq:result}. 
+
+\begin{equation}\label{eq:result}
+P(X=\text{1 Turnover}) = 2(0.01) + 2(0.008) = 0.036
+\end{equation}
+
+
+
+
+\appendix
+\section{Python Code}
+
+\begin{lstlisting}
+
+\end{lstlisting}
+
+\end{document}
