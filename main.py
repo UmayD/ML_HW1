@@ -54,6 +54,7 @@ class SpamDetection:
 
         # Get the vocabulary. Each unique word
         vocabulary = set(word for msg in SMS for word in msg)
+
         self.vocabulary = vocabulary
         wordcounts = np.zeros((len(self.tokens), len(vocabulary)))
 
@@ -96,22 +97,12 @@ class SpamDetection:
 
         return train, test, train_labels, test_labels
 
-    def train(self, train, train_labels, test, test_labels):
-        """
-        Method to train and validate the set with a Multinomial Naive Bayes Model.
-        Both the question 2.2 and 2.3 is applied in this method simultaneously.
-        Laplace Smoothing variables and arrays indicated with "lap" prefix.
-        :param train: Dataset to train the model.
-        :param train_labels: Labels of the train set.
-        :param test: Dataset to validate the model.
-        :param test_labels: Labels of the test set.
-        """
-
+    def var_arrangement(self, train, train_labels):
+        """Method to label spam and ham messages and found the values that will be needed"""
         # Take the count of SMSs', spams and hams. Also, declare alpha array for laplace smoothing
         N = len(train)
         N_spam = 0
         N_ham = 0
-        alpha = np.ones(len(test[0]))
 
         # Find N, N_ham and N_spam
         for i in range(len(train_labels)):
@@ -121,8 +112,8 @@ class SpamDetection:
                 N_ham = N_ham + 1
 
         # Pi spam and Pi ham
-        pi_spam = N_spam/N
-        pi_ham = N_ham/N
+        pi_spam = N_spam / N
+        pi_ham = N_ham / N
 
         # Array declaration to store spam and ham sms' in two different arrays
         spams = np.zeros((N_spam, len(test[0])))
@@ -139,6 +130,21 @@ class SpamDetection:
             else:
                 hams[s] = train[i]
                 h += 1
+
+        return spams, hams, pi_spam, pi_ham
+
+    def model(self, test, spams, hams):
+        """
+        Method to train and validate the set with a Multinomial Naive Bayes Model.
+        Both the question 2.2 and 2.3 is applied in this method simultaneously.
+        Laplace Smoothing variables and arrays indicated with "lap" prefix.
+        :param train: Dataset to train the model.
+        :param train_labels: Labels of the train set.
+        :param test: Dataset to validate the model.
+        :param test_labels: Labels of the test set.
+        """
+
+        alpha = np.ones(len(test[0]))
 
         # Find tjs' that is number of occurrences
         tj_spam = np.sum(spams, axis=0)
@@ -181,6 +187,10 @@ class SpamDetection:
                 prob_ham = 0
             theta_ham.append(prob_ham)
             lap_theta_ham.append(math.log(lap_prob_ham))
+
+        return theta_spam, theta_ham, lap_theta_ham, lap_theta_spam, pi_ham, pi_spam
+
+    def train(self, test, test_labels, theta_spam, theta_ham, lap_theta_ham, lap_theta_spam, pi_ham, pi_spam):
 
         pred = 0
         lap_pred = 0
@@ -237,7 +247,6 @@ class SpamDetection:
         print("Total set ", len(test))
         print("Correct predictions", pred)
         print("False predictions ", (len(test) - pred))
-
         np.savetxt("test_accuracy.csv", np.array([accuracy]))
 
         # Laplace Accuracy print
@@ -246,42 +255,55 @@ class SpamDetection:
         print("Laplace Accuracy " + str(lap_accuracy))
         print("Correct Laplace predictions", lap_pred)
         print("False Laplace predictions ", (len(test) - lap_pred))
-        np.savetxt("test_accuracy_laplace.csv.", np.array([lap_accuracy]))
+        np.savetxt("test_accuracy_laplace.csv", np.array([lap_accuracy]))
 
+    # def feature_vocab(self):
+    #     # Feature Selection Vocab.
+    #     c = Counter([x for sublist in self.tokens for x in sublist])
+    #     Vr_count = Counter(el for el in c.elements() if c[el] >= 10)
+    #     feat_vocab = list(Vr_count)
+    #     return feat_vocab
+    #
+    # def feature_selected_array_arrangement(self, feat_vocab):
+    #     wordcounts = np.zeros((len(self.tokens), len(self.vocabulary)))
+    #
+    #     # Count each unique word for each sms
+    #     row_count = 0
+    #     for sentence in self.tokens:
+    #         bag_vector = np.zeros(len(self.vocabulary))
+    #         for w in sentence:
+    #             for i, word in enumerate(feat_vocab):
+    #                 if word == w:
+    #                     bag_vector[i] += 1
+    #         wordcounts[row_count] = bag_vector
+    #         row_count += 1
+    #     feat_words = wordcounts
+    #     return feat_words
+    #
+    # def feature_selection(self, train, train_labels, test, test_labels):
+    #     """
+    #     Method to create the new filtered vocabulary with the counts of greater than 10
+    #     :return: Vr, new vocabulary list. new_feature, count array of the new vocab list.
+    #     """
+    #     feats = []
+    #     feature_set = self.feature_selected_array_arrangement(feats)
+    #
+    #
+    #     # arrays for probabilities
+    #     theta_spam = []
+    #     lap_theta_spam = []
+    #     theta_ham = []
+    #     lap_theta_ham = []
 
-class FeatureSelection:
-
-    def __init__(self, PATH, LABEL):
-        self.PATH = PATH
-        self.LABEL = LABEL
-
-        # 5572 SMS texts labeled as either ham or spam
-        # Each row is an SMS
-        # Column values denote tokens, separated by commas.
-
-        self.tokens = []
-        with open(self.PATH, 'r') as csvfile:
-            self.line = csv.reader(csvfile)
-            self.tokens = list(self.line)[:-1]
-
-        with open(self.LABEL, 'r') as csvfile:
-            self.line = csv.reader(csvfile)
-            self.labels = list(self.line)[:-1]
-
-        c = Counter([x for sublist in self.tokens for x in sublist])
-        self.Vr_count = Counter(el for el in c.elements() if c[el] >= 10)
-        self.Vr = list(self.Vr_count)
-        print(len(self.Vr))
 
 
 if __name__ == '__main__':
-    #x = SpamDetection("tokenized_corpus.csv", "labels.csv")
-    #SMS_array = x.create_m_array()
-    #train, test, train_labels, test_labels = x.split_data(SMS_array)
-    #x.train(train, train_labels, test, test_labels)
-
-    fs = FeatureSelection("tokenized_corpus.csv", "labels.csv")
-
+    x = SpamDetection("tokenized_corpus.csv", "labels.csv")
+    SMS_array = x.create_m_array()
+    train, test, train_labels, test_labels = x.split_data(SMS_array)
+    spams, hams, pi_spam, pi_ham = x.var_arrangement(train, train_labels)
+    theta_spam, theta_ham, lap_theta_ham, lap_theta_spam, pi_ham, pi_spam = x.model(test, spams, hams)
+    x.train(test, test_labels, theta_spam, theta_ham, lap_theta_ham, lap_theta_spam, pi_ham, pi_spam)
 
 
 
